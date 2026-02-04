@@ -11,8 +11,9 @@ This project demonstrates how to implement a robust hardware-based licensing sys
 - **USB Dongle Detection**: Automatically detects USB dongles connected to any port
 - **License Validation**: Verifies license authenticity using RSA-SHA256 digital signatures
 - **Feature Management**: Conditionally unlocks SDK features based on license validity
-- **Dual Mode Operation**: 
-  - **HID Mode**: Works with physical USB dongles via HID protocol
+- **Multiple Operation Modes**: 
+  - **USB Stick Mode** (Recommended): Works with any USB flash drive - simple and reliable
+  - **HID Mode**: Works with physical USB HID dongles via HID protocol
   - **Simulation Mode**: Uses file-based simulation for testing without hardware
 - **Graceful Degradation**: Continues in demo mode when dongle is absent or invalid
 - **Real-time Monitoring**: Detects dongle connection/disconnection events during runtime
@@ -67,29 +68,65 @@ USB Dongle Interface Layer (HID or Simulation)
 
 ### Running the Application
 
-#### Simulation Mode (No Hardware Required)
+#### USB Stick Mode (Recommended - Simple & Reliable)
+
+**This is the easiest and most reliable method!** Works with any USB flash drive (Lexar, SanDisk, etc.).
+
+1. **Copy license to your USB stick:**
+   ```cmd
+   copy test-licenses\valid_all_features.json E:\license.json
+   ```
+   (Replace `E:` with your USB drive letter)
+
+2. **Update appsettings.json:**
+   ```json
+   {
+     "Mode": "simulation",
+     "SimulationPath": "E:"
+   }
+   ```
+
+3. **Run the application:**
+   ```cmd
+   dotnet run --project UsbDongleLicensing
+   ```
+
+**That's it!** The app will:
+- ✅ Detect when USB stick is plugged in
+- ✅ Validate the license signature
+- ✅ Enable features based on license
+- ✅ Detect when USB stick is removed (hot-plug)
+
+**See [USB_STICK_LICENSING_GUIDE.md](USB_STICK_LICENSING_GUIDE.md) for complete instructions.**
+
+#### Simulation Mode (Testing Without USB)
 
 Run with simulated USB dongle using test license files:
 
-```
-dotnet run -- --simulation
-```
-
-Or specify a custom path for license files:
-
-```
-dotnet run -- --simulation --path ./my-licenses
+```cmd
+dotnet run --project UsbDongleLicensing --simulation
 ```
 
-#### HID Mode (Physical USB Dongle)
+Or specify a custom path for license files in `appsettings.json`:
 
-Run with a physical USB dongle:
-
+```json
+{
+  "Mode": "simulation",
+  "SimulationPath": "./test-licenses"
+}
 ```
-dotnet run -- --hid
+
+#### HID Mode (Physical USB HID Dongle)
+
+Run with a physical USB HID dongle (requires programmable HID device):
+
+```cmd
+dotnet run --project UsbDongleLicensing --hid
 ```
 
 Make sure your USB dongle is connected and the vendor/product IDs are configured in `appsettings.json`.
+
+**Note:** Most USB flash drives are NOT HID devices. See [CHECK_USB_HID_SUPPORT.md](CHECK_USB_HID_SUPPORT.md) to check if your device supports HID, or use USB Stick Mode instead (recommended).
 
 ### Configuration
 
@@ -210,6 +247,17 @@ Quick start for manual testing:
 
 ## Documentation
 
+### Quick Start Guides
+
+- **[USB Stick Licensing Guide](USB_STICK_LICENSING_GUIDE.md)** ⭐ **RECOMMENDED** - Simple USB flash drive licensing (no HID required)
+- **[Manual Testing Guide](MANUAL_TESTING_GUIDE.md)** - Comprehensive step-by-step manual testing instructions
+- **[Generate Real Licenses](GENERATE_REAL_LICENSES.md)** - How to create properly signed license files
+
+### Advanced Guides
+
+- **[USB Dongle Setup Guide](USB_DONGLE_SETUP_GUIDE.md)** - Physical USB HID dongle setup (requires programmable device)
+- **[Check USB HID Support](CHECK_USB_HID_SUPPORT.md)** - How to check if your USB device supports HID protocol
+
 ### Specification Documents
 
 Detailed specification documents are available in the `.kiro/specs/usb-dongle-licensing/` directory:
@@ -218,9 +266,8 @@ Detailed specification documents are available in the `.kiro/specs/usb-dongle-li
 - **[Design Document](.kiro/specs/usb-dongle-licensing/design.md)** - Architecture, components, interfaces, and correctness properties
 - **[Implementation Tasks](.kiro/specs/usb-dongle-licensing/tasks.md)** - Step-by-step implementation plan with 12 main tasks
 
-### Testing Documentation
+### Additional Documentation
 
-- **[Manual Testing Guide](MANUAL_TESTING_GUIDE.md)** - Comprehensive step-by-step manual testing instructions
 - **[Project Setup](PROJECT_SETUP.md)** - Project structure and dependencies overview
 
 ## How It Works
@@ -252,12 +299,12 @@ When no valid license is found, the application runs in demo mode:
 
 ## Troubleshooting
 
-### Dongle Not Detected
+### USB Stick Not Detected
 
-- Verify USB dongle is connected
-- Check vendor/product IDs in configuration
-- Ensure HID drivers are installed
-- Try running as administrator
+- Verify USB stick is plugged in
+- Check the drive letter in `appsettings.json` matches your USB drive
+- Ensure `license.json` file exists on the USB stick
+- Try: `dir E:\license.json` (replace E: with your drive letter)
 
 ### License Validation Fails
 
@@ -265,6 +312,16 @@ When no valid license is found, the application runs in demo mode:
 - Check signature is valid base64
 - Ensure expiration date is in the future
 - Verify public key matches the signing key
+- Regenerate licenses: `dotnet run --project LicenseGenerator`
+
+### HID Dongle Not Detected
+
+- Verify USB dongle is connected
+- Check vendor/product IDs in configuration
+- Most USB flash drives are NOT HID devices - use USB Stick Mode instead
+- See [CHECK_USB_HID_SUPPORT.md](CHECK_USB_HID_SUPPORT.md) to verify HID support
+- Ensure HID drivers are installed
+- Try running as administrator
 
 ### Simulation Mode Issues
 
