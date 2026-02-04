@@ -126,11 +126,41 @@ The application demonstrates four SDK features:
 
 ## Test Data Generation
 
-Generate test license files for simulation mode:
+Generate test license files with real RSA signatures for simulation mode:
 
+### Quick Method: Use the TestDataGenerator
+
+Create a simple C# file to generate keys and licenses:
+
+```csharp
+using UsbDongleLicensing.Core;
+using UsbDongleLicensing.TestData;
+
+var generator = new TestDataGenerator();
+generator.GenerateKeyPair();
+generator.SaveKeyPair("keys/private_key.xml", "keys/public_key.xml");
+
+var license = generator.CreateLicense(
+    "DEMO-1234-5678-ABCD",
+    "Test User",
+    DateTime.UtcNow,
+    DateTime.UtcNow.AddYears(2),
+    FeatureFlags.BasicFeature | FeatureFlags.AdvancedAnalytics | 
+    FeatureFlags.DataExport | FeatureFlags.ApiAccess
+);
+license.Signature = generator.SignLicense(license);
+generator.SaveLicense(license, "test-licenses/license.json");
+
+Console.WriteLine($"Public Key: {generator.GetPublicKeyBase64()}");
 ```
-dotnet run --project TestDataGenerator
-```
+
+### Detailed Instructions
+
+See **[GENERATE_REAL_LICENSES.md](GENERATE_REAL_LICENSES.md)** for complete instructions on:
+- Generating RSA key pairs
+- Creating properly signed licenses
+- Configuring the application with the public key
+- Testing different license scenarios
 
 This creates sample licenses with various scenarios:
 - Valid license with all features

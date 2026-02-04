@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("UsbDongleLicensing")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+78ec3e9de7779a89621ce9a20ee4dfef7801be9b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8bf551b2573e46e9fe9a6ab09976838749af089e")]
 [assembly: System.Reflection.AssemblyProductAttribute("UsbDongleLicensing")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UsbDongleLicensing")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
