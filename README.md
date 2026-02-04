@@ -153,13 +153,45 @@ Run only property-based tests:
 dotnet test --filter Category=PropertyBased
 ```
 
-## Specification Documents
+## Manual Testing
+
+For comprehensive manual testing instructions, see the **[Manual Testing Guide](MANUAL_TESTING_GUIDE.md)**.
+
+The guide includes:
+- 7 detailed test scenarios (demo mode, valid license, partial license, expired license, etc.)
+- Step-by-step instructions with expected behavior
+- Feature flags reference table
+- Verification checklist
+- Troubleshooting tips
+
+Quick start for manual testing:
+
+1. **Test Demo Mode** (no license):
+   ```cmd
+   del test-licenses\license.json
+   dotnet run --project UsbDongleLicensing
+   ```
+
+2. **Test Valid License** (all features):
+   ```cmd
+   echo {"licenseKey":"DEMO-1234","issuedTo":"Test User","issuedDate":"2024-01-01T00:00:00Z","expirationDate":"2025-12-31T23:59:59Z","enabledFeatures":15,"signature":"dGVzdHNpZ25hdHVyZWZvcmRlbW9wdXJwb3Nlcw=="} > test-licenses\license.json
+   dotnet run --project UsbDongleLicensing
+   ```
+
+## Documentation
+
+### Specification Documents
 
 Detailed specification documents are available in the `.kiro/specs/usb-dongle-licensing/` directory:
 
-- **[Requirements Document](./kiro/specs/usb-dongle-licensing/requirements.md)** - Complete requirements with user stories and acceptance criteria
-- **[Design Document](./kiro/specs/usb-dongle-licensing/design.md)** - Architecture, components, interfaces, and correctness properties
-- **[Implementation Tasks](./kiro/specs/usb-dongle-licensing/tasks.md)** - Step-by-step implementation plan with 12 main tasks
+- **[Requirements Document](.kiro/specs/usb-dongle-licensing/requirements.md)** - Complete requirements with user stories and acceptance criteria
+- **[Design Document](.kiro/specs/usb-dongle-licensing/design.md)** - Architecture, components, interfaces, and correctness properties
+- **[Implementation Tasks](.kiro/specs/usb-dongle-licensing/tasks.md)** - Step-by-step implementation plan with 12 main tasks
+
+### Testing Documentation
+
+- **[Manual Testing Guide](MANUAL_TESTING_GUIDE.md)** - Comprehensive step-by-step manual testing instructions
+- **[Project Setup](PROJECT_SETUP.md)** - Project structure and dependencies overview
 
 ## How It Works
 

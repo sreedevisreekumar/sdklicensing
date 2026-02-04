@@ -1,0 +1,8 @@
+{
+  "licenseKey": "DEMO-1234-5678-ABCD",
+  "issuedTo": "Demo User",
+  "issuedDate": "2024-01-01T00:00:00Z",
+  "expirationDate": "2025-12-31T23:59:59Z",
+  "enabledFeatures": 15,
+  "signature": "dGVzdHNpZ25hdHVyZWZvcmRlbW9wdXJwb3Nlcw=="
+}
