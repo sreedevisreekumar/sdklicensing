@@ -13,6 +13,8 @@ public class SimulatedDongleProvider : IUsbDongleProvider, IDisposable
     private readonly string _simulationPath;
     private readonly string _licenseFileName = "license.json";
     private FileSystemWatcher? _fileWatcher;
+    private System.Threading.Timer? _driveCheckTimer;
+    private bool _wasConnected;
     private bool _disposed;
 
     /// <summary>
@@ -47,6 +49,12 @@ public class SimulatedDongleProvider : IUsbDongleProvider, IDisposable
 
         // Set up file system watcher to monitor license file changes
         InitializeFileWatcher();
+
+        // Initialize connection state
+        _wasConnected = IsConnected();
+
+        // Set up periodic drive check timer (checks every 2 seconds)
+        _driveCheckTimer = new System.Threading.Timer(CheckDriveStatus, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
     }
 
     /// <summary>
@@ -54,15 +62,84 @@ public class SimulatedDongleProvider : IUsbDongleProvider, IDisposable
     /// </summary>
     private void InitializeFileWatcher()
     {
-        _fileWatcher = new FileSystemWatcher(_simulationPath)
+        try
         {
-            Filter = _licenseFileName,
-            NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
-            EnableRaisingEvents = true
-        };
+            _fileWatcher = new FileSystemWatcher(_simulationPath)
+            {
+                Filter = _licenseFileName,
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
+                EnableRaisingEvents = true
+            };
 
-        _fileWatcher.Created += OnLicenseFileCreated;
-        _fileWatcher.Deleted += OnLicenseFileDeleted;
+            _fileWatcher.Created += OnLicenseFileCreated;
+            _fileWatcher.Deleted += OnLicenseFileDeleted;
+            _fileWatcher.Error += OnFileWatcherError;
+        }
+        catch (Exception)
+        {
+            // If FileSystemWatcher fails to initialize (e.g., drive not accessible),
+            // we'll rely on the periodic drive check timer
+            _fileWatcher = null;
+        }
+    }
+
+    /// <summary>
+    /// Handles FileSystemWatcher errors (e.g., when drive becomes inaccessible).
+    /// </summary>
+    private void OnFileWatcherError(object sender, ErrorEventArgs e)
+    {
+        // When the drive is removed, FileSystemWatcher may throw errors
+        // The periodic timer will detect the disconnection
+    }
+
+    /// <summary>
+    /// Periodically checks if the drive/license file is still accessible.
+    /// This handles cases where the entire drive is removed (USB unplugged).
+    /// </summary>
+    private void CheckDriveStatus(object? state)
+    {
+        try
+        {
+            bool isCurrentlyConnected = IsConnected();
+
+            // Detect state change
+            if (_wasConnected && !isCurrentlyConnected)
+            {
+                // Was connected, now disconnected
+                _wasConnected = false;
+                var dongleInfo = new DongleInfo
+                {
+                    VendorId = "SIM",
+                    ProductId = "0001",
+                    SerialNumber = "SIMULATED",
+                    DetectedAt = DateTime.UtcNow
+                };
+                DongleDisconnected?.Invoke(this, new DongleEventArgs(dongleInfo));
+
+                // Try to reinitialize the file watcher if it was disposed
+                if (_fileWatcher == null)
+                {
+                    InitializeFileWatcher();
+                }
+            }
+            else if (!_wasConnected && isCurrentlyConnected)
+            {
+                // Was disconnected, now connected
+                _wasConnected = true;
+                var dongleInfo = DetectDongle();
+                DongleConnected?.Invoke(this, new DongleEventArgs(dongleInfo));
+
+                // Reinitialize file watcher if needed
+                if (_fileWatcher == null)
+                {
+                    InitializeFileWatcher();
+                }
+            }
+        }
+        catch
+        {
+            // Ignore errors during periodic check
+        }
     }
 
     /// <summary>
@@ -70,6 +147,7 @@ public class SimulatedDongleProvider : IUsbDongleProvider, IDisposable
     /// </summary>
     private void OnLicenseFileCreated(object sender, FileSystemEventArgs e)
     {
+        _wasConnected = true;
         var dongleInfo = DetectDongle();
         DongleConnected?.Invoke(this, new DongleEventArgs(dongleInfo));
     }
@@ -79,6 +157,7 @@ public class SimulatedDongleProvider : IUsbDongleProvider, IDisposable
     /// </summary>
     private void OnLicenseFileDeleted(object sender, FileSystemEventArgs e)
     {
+        _wasConnected = false;
         var dongleInfo = new DongleInfo
         {
             VendorId = "SIM",
@@ -95,8 +174,16 @@ public class SimulatedDongleProvider : IUsbDongleProvider, IDisposable
     /// <returns>True if the license file exists; otherwise, false.</returns>
     public bool IsConnected()
     {
-        var licenseFilePath = Path.Combine(_simulationPath, _licenseFileName);
-        return File.Exists(licenseFilePath);
+        try
+        {
+            var licenseFilePath = Path.Combine(_simulationPath, _licenseFileName);
+            return File.Exists(licenseFilePath);
+        }
+        catch
+        {
+            // If we can't access the path (e.g., drive removed), return false
+            return false;
+        }
     }
 
     /// <summary>
@@ -245,10 +332,19 @@ public class SimulatedDongleProvider : IUsbDongleProvider, IDisposable
         {
             if (disposing)
             {
+                // Dispose timer
+                if (_driveCheckTimer != null)
+                {
+                    _driveCheckTimer.Dispose();
+                    _driveCheckTimer = null;
+                }
+
+                // Dispose file watcher
                 if (_fileWatcher != null)
                 {
                     _fileWatcher.Created -= OnLicenseFileCreated;
                     _fileWatcher.Deleted -= OnLicenseFileDeleted;
+                    _fileWatcher.Error -= OnFileWatcherError;
                     _fileWatcher.Dispose();
                     _fileWatcher = null;
                 }
