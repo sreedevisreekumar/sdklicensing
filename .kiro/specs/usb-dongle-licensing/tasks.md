@@ -187,7 +187,7 @@ This implementation plan breaks down the USB dongle licensing demonstration appl
     - Implement main application loop for command processing
     - _Requirements: 1.1, 5.1, 9.5_
   
-  - [~] 9.2 Implement command processing
+  - [ ] 9.2 Implement command processing
     - Parse user input into commands: status, features, run <feature>, help, exit
     - Implement status command to display current licensing state
     - Implement features command to list available features
@@ -197,7 +197,7 @@ This implementation plan breaks down the USB dongle licensing demonstration appl
     - Handle invalid commands with error message and help prompt
     - _Requirements: 7.1, 7.3, 7.4, 8.2, 8.3_
   
-  - [~] 9.3 Implement startup sequence
+  - [ ] 9.3 Implement startup sequence
     - Display welcome banner
     - Detect USB dongle (or check for simulation file)
     - If no dongle found, display warning and enter demo mode
@@ -224,7 +224,7 @@ This implementation plan breaks down the USB dongle licensing demonstration appl
     - Implement SaveLicense() to write license as JSON file
     - _Requirements: 9.2, 9.3, 9.4_
   
-  - [~] 10.2 Create sample test data scenarios
+  - [ ] 10.2 Create sample test data scenarios
     - Generate test RSA key pair and save to files
     - Create valid license with all features enabled (expires in 1 year)
     - Create valid license with partial features (only BasicFeature and AdvancedAnalytics)
@@ -249,7 +249,7 @@ This implementation plan breaks down the USB dongle licensing demonstration appl
     - _Requirements: 9.2, 9.3_
 
 - [ ] 11. Create configuration and documentation
-  - [~] 11.1 Create appsettings.json configuration file
+  - [ ] 11.1 Create appsettings.json configuration file
     - Add mode setting (simulation or hid)
     - Add simulation path for test license files
     - Add USB vendor ID and product ID for HID mode
@@ -257,7 +257,7 @@ This implementation plan breaks down the USB dongle licensing demonstration appl
     - Add logging settings
     - _Requirements: 1.5, 3.1, 9.1_
   
-  - [~] 11.2 Create README.md with usage instructions
+  - [ ] 11.2 Create README.md with usage instructions
     - Document how to run in simulation mode
     - Document how to run with physical USB dongle
     - Document command-line arguments
@@ -266,7 +266,7 @@ This implementation plan breaks down the USB dongle licensing demonstration appl
     - Include sample configuration
     - _Requirements: All requirements_
 
-- [~] 12. Final checkpoint - Integration testing and validation
+- [ ] 12. Final checkpoint - Integration testing and validation
   - Run all property-based tests (minimum 100 iterations each)
   - Run all unit tests
   - Test complete application flow in simulation mode
